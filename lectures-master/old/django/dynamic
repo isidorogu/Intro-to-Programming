@@ -1,0 +1,261 @@
+^T: Dynamic Websites
+^I: Introduction to Programming for Public Policy
+^SI: Intro Programming
+^D: November 7, 2016
+^H: \DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{12} 
+^H: \include{pythonlst}
+
++ Static and Dynamic Webpages
+- Last week we built a \chred{static} webpage, containing a single, fixed file and referencing other frozen resources (pictures).
+-- Requesting that file's URL, we'll always see the same thing.
+%
+- Much of the web is \chred{dynamic}: it evolves over time or as a function of its inputs, without someone literally rewriting the site.
+-- N.B.: typically this means `server side' dynamic: the server constructs the resource/site before sending it to you.
+-- The \emph{individual resources} (images, videos) in a site are usually static.
+%
+- Contrast to javascript (not covered), which can modify the page behavior or appearance as you click around (certain menus, web apps, formatting, etc.) and potentially request other resources.
+-- Of course, those resources may be dynamic; e.g., gmail powered by AJAX (asynchronous javascript and XML, often actually JSON).
+
++ The Options for Dynamic Websites
+- `Traditional' dynamic web stack is LAMP:
+-- Linux + Apache + MySQL (DB) + php.
+- Many more options today: other servers (nginx), databases (Postgres, SQLite) and languages (python, Ruby on Rails).
+- We'll continue using python, with \chred{Django}.
+-- Popular, powerful framework, used by Instagram, Pinterest, The Onion, Washington Post, etc.
+-- Want more?  Exceptional tutorials: \link{https://docs.djangoproject.com/en/1.10/intro/tutorial01/}{official} and \link{https://tutorial.djangogirls.org/en/}{Django Girls}.
+
++ Web Server Gateway Interface
+How do we `hook up' python as a server?
+- Server forwards requests to python through a `gateway interface' module; python responds with a resource.
+- Server \emph{should} handle static resources itself (it's much better at it!); heavy server configuration is beyond the scope of this course.
+- Luckily for us, Django provides a development server that is lightweight and easy to run.
+../img/mod_wsgi_and_layers.pdf:0.40:side
+
++ What We'll Cover
+Like python, a huge realm; choice of material and method very subjective.
+- Initial set-up of django and a \chred{site}.
+- Create hello/goodbye world \chred{views} and register its URLs.
+- Return a \chred{table} from pandas; the same, from csv.
+- Build several \emph{very} simple \chred{dynamic} `views.'
+- Handling \chred{\ttb{GET}} and \chred{\ttb{POST}} data.
+- An introduction to \chred{forms}.
+- Return a dynamic \chred{plot} (v. generating `all' the plots in advance).
+These are basically the pieces you'll need to make your projects.
+>1em
+- On Wednesday, we'll make it pretty again, with HTML \emph{templates} and hopefully a bit of bootstrap (pre-built css).
+
++ Getting Started with Django: A Site
+If you have not already done so, install django:
+` \pr conda install django
+Navigate to a directory where you want to work, then:
+` \pr django-admin startproject mysite \\ \pr cd mysite
+Run the built-in development server, and check it out!!
+` \pr python manage.py runserver \\ ... \\ Django version 1.9.5, using settings \tqs{}mysite.settings\tqs{} \\ Starting development server at \chred{http://127.0.0.1:8000/} \\ Quit the server with CONTROL-C. \\ ...
+
++ Site Resources
+- This created a number of files for us.
+- We've already run \tt{manage.py}; we'll also use \tt{mysite/settings.py} and \tt{mysite/urls.py} a lot.
+%
+../img/site_resources.png:0.6
+
++ Getting Started with Django: An App
+A site is a collection of (potentially) many \chred{apps}.  Let's make one!
+` \pr python manage.py startapp myapp
+Just like \tt{startproject}, this creates some files for us.
+../img/app_resources.png:0.4
+
++ Getting Started with Django: A view
+- \chred{Views} are specific functions/pages within an app.
+- Edit the file \tt{myapp/views.py}, adding these lines:
+\pythonexternal{ex/index_app.py}
+
++ How Do We Find Our Site?
+# Tell the site about the app.  In \tt{mysite/urls.py}, add:
+#- \pythoninline{from django.conf.urls import include}
+#- \pythoninline{url(r'^myapp/', include('myapp.urls')),}
+# Tell the app about the view.  In \tt{myapp/urls.py}, put
+\pythonexternal{ex/app_urls_1.py}
+These are regular expressions, peeling off parts of the URL.
+
++ Now Run the Web Server Again: 
+` \pr python manage.py runserver
+\centering
+>2em
+\link{http://127.0.0.1:8000/myapp/}{http://127.0.0.1:8000/myapp/}  \\
+>1em
+../img/dj_hw.png:0.4
+
++ Let's Recap
+# Created a site with \tt{django-admin startproject}.
+# Created an app with \tt{python manage.py startapp myapp}.
+# Added a view to that app, which returned an \tt{HttpResponse}.
+# Hooked up the \tt{urls.py} for the site and app, to create the URL.
+# Have a site online!!
+>1em
+- Normally, we just create and register individual views.
+- Let's make a `farewell world' view (prepared for Wednesday!).
+
++ Using What We've Already Learned
+Run functions on a website, leveraging the awesome power of python!
+- Let's make a pandas table, and use \tt{df.to\_html()}.
+\pythonexternal{ex/simple_table.py}
+
++ Loading Static Data
+- With Django, it's easy to make dynamic sites.  Unfortunately, using static data is a bit of a pain.\footnote{Django has extraordinary database support with Object-Relational Mapping (a different interface to RDBMSs).  \\ If you loaded all your data into your database, this would be the way to go.}
+- You will need to load CSV files for your homework and projets.
+\pythonexternal{ex/csv_table.py}
+
++ Collecting Your Static Files
+- Let's make a small csv at \tt{myapp/static/myapp/va\_presidential.csv}.
+- You also need to tell Django where your static files live.
+- Set up the static files ROOT, in mysite/settings:
+-- Add \tt{\tqs{}myapp.apps.MyappConfig\tqs{}} to \tt{INSTALLED\_APPS}.
+-- At the end, add \\ \pythoninline{STATIC_ROOT = os.path.join(BASE_DIR, 'static')}
+- Then run this (and accept):
+` \pr python manage.py collectstatic
+- We used the `long' path, so that the `collected' files would still have a recognizable pattern.
+
++++ Dynamic Websites
+
++ Dynamic Websites: What's so great about Django?
+- Strip variables out, in urls.py: this creates `\tt{w}': \\ \pythoninline{url(r'^greet/(?P<w>[A-Za-z\\- ]+)/$', views.greet)}
+- Pass these to views:
+\pythonexternal{ex/greet.py}
+>1em
+- Let's create views to add and subtract numbers.
+
++++ Templates
+\centering
+git clone git@github.com:harris-ippp/django-ex.git
+
++ What are Templates?
+- Templates are reusable HTML code blocks, with insertion points for variables (or other large blocks), simple functions, and loops.
+-- This reduces rewriting code (nav bar) and repetitive code (lists).
+-- Philosophy: Don't Repeat Yourself (DRY).
+- Template files live at \tt{myapp/templates/ex.html}.
+- `Render' html code by inserting variables into the template by: \\ \pythoninline{return render(req, "ex.html", \{"key" : value\})}
+- This is actually an \tt{HttpResponse}.
+>1em
+- Best illustrated by example.
+
++[fragile] Prettifying and Codifying: Templates
+- Let's start by using templates to insert values.
+- Good to use variables, but also want to reuse e.g., nav bar.
+- So we could write our greeting with a view, like this:
+\pythonexternal{ex/template_greet.py}
+- And a \tt{myapp/templates/greet.html} as:
+\begin{tcolorbox}
+\verb|Well hello, {{ who }}!!|
+\end{tcolorbox}
+- Here, \tt{\{\{ who \}\}} is variable, passed as an item in a dictionary.
+
++[fragile] Template Code: \tt{for}, \tt{if}
+- Write for loops or if statements with:
+-- \verb|{% for x in xli %}<li>{{ x }}</li>{% endfor %}|
+-- \verb|{% if animal == "dog" %}ARFF{% endif %}|
+- Let's create a view that renders a \tt{pure\_template.html}.
+- This is very useful for elements in parts of forms, etc.
+
++[fragile] Template Code: Dictionary and List Items, Functions
+- For functions, drop the parentheses.
+-- For instance \verb|{% for k, v in di.items %}| (instead of \tt{di.items()}
+- Access variables out of a dictionary or elements of a list using a dot, instead of brackets.
+-- So: \tt{di.cat} instead of \tt{di["cat"]}.
+- Still with \tt{pure\_template.html}, let's render the dictionary, \\ \verb|'di' : {"dog":"ARF", "cat":"MEOW", "tiger":"ROAR"}|
+
++[fragile] Template Inheritance
+- I've copied my `standard' header in \tt{myapp/templates/base.html}.
+-- The header will be reused every time.
+- \verb|{% block content %}| is a replaceable block of code.
+- Swap it out by overwriting the bock, in \tt{myapp/templates/view\_table.html}.
+\begin{tcolorbox}
+\verb|{% extends "base.html" %} | \\
+\verb| | \\
+\verb|{% block content %} | \\
+\verb=  {{ html_table | safe }} = \\
+\verb|  {% lorem 3 p %} <!-- some text --> | \\
+\verb|{% endblock %}|
+\end{tcolorbox}
+- New view: render table, using \tt{html\_table} and \tt{view\_table.html}.
+- Very little html, to get a new page.  
+
++[fragile] Additional Template Functions
+- To load css files, scripts, or other static files, you may need:
+-- \verb|{% load staticfiles %}| and \verb|{% static 'myapp/style.css' %}|.
+-- The latter locates a static file, according to your static ROOT.
+- There are many, many template filters, most notably, `\tt{safe},' which just prints to html (instead of wrapping it as a string).
+-- You've seen \verb={{ table_html | safe }}=.
+
++++ Forms
+
++ Reading \tt{GET} and \tt{POST}
+- You don't want users to \emph{have} to edit the URL.
+- The first step to fixing this is to be able to read the \tt{GET} and \tt{POST} requests that your website would send.
+- This is pretty easy (and it is the same for \tt{POST}):
+\pythonexternal{ex/get_reader.py}
+- So how do we \emph{send} this data?
+
++ HTML Forms
+- The standard HTML element for inputing data is a \emph{form}: a collection of radio buttons, check boxes, text input fields of varying lengths, drop-down menus, etc. within \tt{<form></form>} tags.  Two important attributes:
+-# \tt{action}: destination site. 
+-# \tt{method}: get or post.
+- Take a look at the source for this form:
+\centering
+\link{https://harris-ippp.github.io/lectures/form.html}{https://harris-ippp.github.io/lectures/form.html}
+
++ HTML Forms and Django Models
+- Django recognizes that there is likely a correspondence between data (objects/databases), forms (for creating objects), and views (for displaying them).  They are all built from \chred{Models}.
+-- We won't cover this in depth -- the databases are implemented with an Object Relational-Mapping (ORM, RDBMS interface wrapping SQL) that would be a good deal more work.
+-- But you can learn more \link{https://tutorial.djangogirls.org/en/django_models/}{here}.
+%
+- Nevertheless, Models are a useful tool.
+-- Instead of manually writing each form, you can create a Django object that will do (a lot of) the work for you.
+
++ A Minimal Model
+Imagine that we want a drop-down selection of US states.
+- Many types (\tt{CharField}, \tt{IntegerField}, \&c.) and display methods.
+- Create a model inheriting from \tt{django.forms.ModelForm} in \tt{myapp/models.py}:
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{9} 
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{9}
+\pythonexternal{ex/model.py}
+
++ A Minimal Form
+Now writing the form is not so bad (but not intuitive, either).
+- The \tt{attrs} is for the html rendering of the element.
+\pythonexternal{ex/form.py}
+
++[fragile] A Template: Display a Chosen State and an Option
+- The elements of the form are `automatically' by \tt{.as\_p} or \tt{.as\_table}, but the wrapping tags are not -- they must be written out in the template.
+\begin{tcolorbox}
+\verb|{% if state %}| \\
+\verb|    I hear you, {{ state }}!!| \\
+\verb|{% endif %}| \\
+\verb|| \\
+\verb|<form action="{{ form_action }}"|
+\verb|      method="{{ form_method }}">| \\
+\verb|  {{ form.as_p }}| \\
+\verb|</form>|
+\end{tcolorbox}
+
++ A View
+- We can pass all of the elements in the form to the template.
+- Also use \tt{reverse\_lazy()} to look up the url of the site.
+\pythonexternal{ex/form_view.py}
+
++ Dynamic Plots
+Make and return plots on the fly.  (Brilliant or misguided?)
+>0.5em
+- Each visitor wants a plot with specific parameters.  Can't put them all in the same place (overwrite), but can't save them all, either (space).  
+%
+- On the other hand, most of what you generate will be the $\unsim$same.  Making new plots for every single visitor is expensive.  
+%
+- Depending on the parameters of your website, could generate `all' possibilities and serve them statically.  Faster but less flexible.
+Other libraries (Bokeh) build plots with javascript from data... a good `extension' in your projects.
+
++ Creating Plots on the Fly: A Recipe
+Looks like a lot, but just two tricks:
+# Write to bytes instead of a file.
+# Return the bytes as \tt{content\_type = \chred{"image/png"}}.
+<0.5em
+../img/plots_on_the_fly.png:0.8
+
